@@ -20,7 +20,6 @@ text
 git clone https://github.com/Dilajohn/neighbourhelp.git
 cd neighbourhelp
 
-text
 
 2. Optional: create virtual environment
 
@@ -28,7 +27,6 @@ python -m venv env
 source env/bin/activate # Linux/Mac
 env\Scripts\activate # Windows
 
-text
 
 3. Install dependencies
 
@@ -56,11 +54,9 @@ Install pytest if you don't have it:
 
 pip install pytest
 
-text
 
 Run tests:
 
 pytest
 
-text
 undefined
