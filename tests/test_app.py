@@ -1,10 +1,18 @@
-# tests/test_app.py
+import pytest
+from src.app import app
 
-import unittest
+@pytest.fixture
+def client():
+    with app.test_client() as client:
+        yield client
 
-class TestApp(unittest.TestCase):
-    def test_main(self):
-        self.assertTrue(True)
+def test_get_home(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b"Report a Community Issue" in response.data
 
-if __name__ == "__main__":
-    unittest.main()
+def test_post_issue(client):
+    response = client.post("/", data={"description": "Pothole on Main St.", "location": "Main St."})
+    assert response.status_code == 200
+    assert b"Pothole on Main St." in response.data
+
