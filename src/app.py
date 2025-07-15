@@ -1,15 +1,26 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template_string, redirect, url_for
 
 app = Flask(__name__)
 
 # Simple in-memory storage for demonstration
 issues = []
 
-def main():
-    print("Welcome to NeighbourHelp!")
+# HTML templates as strings
 
-# Simple HTML form and list interface, no templates for brevity
-HTML = '''
+WELCOME_HTML = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NeighbourHelp - Welcome</title>
+</head>
+<body>
+    <h1>Welcome to NeighbourHelp</h1>
+    <p><a href="{{ url_for('report_issue') }}">Report a Community Issue</a></p>
+</body>
+</html>
+'''
+
+REPORT_HTML = '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,7 +28,7 @@ HTML = '''
 </head>
 <body>
     <h1>Report a Community Issue</h1>
-    <form method="post" action="/">
+    <form method="post" action="{{ url_for('report_issue') }}">
         <label for="description">Issue Description:</label><br>
         <textarea name="description" id="description" cols="30" rows="3" required></textarea><br><br>
         <label for="location">Location:</label><br>
@@ -27,20 +38,30 @@ HTML = '''
     <h2>Reported Issues</h2>
     <ul>
         {% for issue in issues %}
-            <li><strong>{{issue.location}}:</strong> {{issue.description}}</li>
+            <li><strong>{{ issue.location }}:</strong> {{ issue.description }}</li>
+        {% else %}
+            <li>No issues reported yet.</li>
         {% endfor %}
     </ul>
+    <p><a href="{{ url_for('home') }}">Back to Home</a></p>
 </body>
 </html>
 '''
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def home():
+    return render_template_string(WELCOME_HTML)
+
+@app.route("/report", methods=["GET", "POST"])
+def report_issue():
     if request.method == "POST":
         desc = request.form["description"]
         loc = request.form["location"]
         issues.append({"description": desc, "location": loc})
-    return render_template_string(HTML, issues=issues)
+        # Redirect to GET after POST to avoid form resubmission on refresh
+        return redirect(url_for('report_issue'))
+    return render_template_string(REPORT_HTML, issues=issues)
 
 if __name__ == "__main__":
     app.run(debug=True)
+
