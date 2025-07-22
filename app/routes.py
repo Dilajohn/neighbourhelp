@@ -1,21 +1,37 @@
-from flask import Blueprint, render_template, request, redirect, url_for
-from flask_login import login_required
+import os
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from werkzeug.utils import secure_filename
+from app import db
+from app.models import Issue
+from app.forms import IssueForm
 
-main_bp = Blueprint('main', __name__)
+bp = Blueprint('main', __name__)
 
-# In-memory 'issues' store for demo purposes. For production, replace with DB storage.
-issues = []
+@bp.route('/')
+def index():
+    issues = Issue.query.order_by(Issue.date_posted.desc()).all()
+    return render_template('index.html', issues=issues)
 
-@main_bp.route("/")
-def home():
-    return render_template("home.html")
-
-@main_bp.route("/report", methods=["GET", "POST"])
-@login_required
+@bp.route('/report', methods=['GET', 'POST'])
 def report():
-    if request.method == "POST":
-        desc = request.form["description"]
-        loc = request.form["location"]
-        issues.append({"description": desc, "location": loc})
-        return redirect(url_for('main.report'))
-    return render_template("report.html", issues=issues)
+    form = IssueForm()
+    if form.validate_on_submit():
+        filename = None
+        if form.image_file.data:
+            filename = secure_filename(form.image_file.data.filename)
+            filepath = os.path.join('app/static/uploads', filename)
+            form.image_file.data.save(filepath)
+
+        new_issue = Issue(
+            title=form.title.data,
+            description=form.description.data,
+            location=form.location.data,
+            category=form.category.data,
+            image_file=filename
+        )
+        db.session.add(new_issue)
+        db.session.commit()
+        flash('Issue reported successfully!', 'success')
+        return redirect(url_for('main.index'))
+
+    return render_template('report_issue.html', form=form)
