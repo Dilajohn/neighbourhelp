@@ -1,2 +1,19 @@
 /* Custom CSS for NeighbourHelp */
-body { background: #f8f9fa; }
+body {
+  background: #f8f9fa;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+header, footer {
+  background-color: #004d40;
+  color: white;
+  padding: 1rem;
+}
+
+.issue-card {
+  background: white;
+  border-left: 4px solid #26a69a;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 0 6px rgba(0,0,0,0.1);
+}
