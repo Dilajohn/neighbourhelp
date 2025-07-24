@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>NeighbourHelp</title>
-  <link
+   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-o9N1j+rT0Do8yWKIkwfH8v7q6kC3SeR3TzP3f2QzPXA="
@@ -25,8 +25,8 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-    {% block content %}
-  <h2>Report an Issue</h2>
+    {% block content %} 
+     <h2>Report an Issue</h2>
   <form method="POST" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
     <p>{{ form.title.label }}<br>{{ form.title() }}</p>
@@ -61,7 +61,7 @@
       marker = L.marker([lat, lng]).addTo(map);
     });
   </script>
-    {% endblock %}
+  {% endblock %}
   </main>
   <footer><p>&copy; 2025 NeighbourHelp</p></footer>
 </body>
