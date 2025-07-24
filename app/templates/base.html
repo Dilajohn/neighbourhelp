@@ -23,10 +23,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
 <body>
-  <!-- Navigation -->
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-      <a class="navbar-brand" href="/">NeighbourHelp</a>
+      <a class="navbar-brand" href="{{ url_for('home') }}">NeighbourHelp</a>
       <button
         class="navbar-toggler"
         type="button"
@@ -41,16 +41,16 @@
 
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          {% if session.get('admin_id') %}
+          {% if session.get('admin_logged_in') %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+              <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin.logout') }}">Logout</a>
+              <a class="nav-link" href="{{ url_for('admin_auth.admin_logout') }}">Logout</a>
             </li>
           {% else %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin.login') }}">Admin Login</a>
+              <a class="nav-link" href="{{ url_for('admin_auth.admin_login') }}">Admin Login</a>
             </li>
           {% endif %}
         </ul>
@@ -58,7 +58,7 @@
     </div>
   </nav>
 
-  <!-- Main content area -->
+  <!-- Flash Messages -->
   <main class="container my-4">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -75,14 +75,14 @@
   </main>
 
   <!-- Footer -->
-  <footer class="bg-dark text-white text-center py-3">
-    <p class="mb-0">&copy; {{ current_year }} NeighbourHelp</p>
+  <footer class="bg-dark text-white text-center py-3 mt-4">
+    <p class="mb-0">&copy; {{ current_year | default(2025) }} NeighbourHelp. All rights reserved.</p>
   </footer>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Leaflet JS (for map integration) -->
+  <!-- Leaflet JS (for maps) -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </body>
 </html>

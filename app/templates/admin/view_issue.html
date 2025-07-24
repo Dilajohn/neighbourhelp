@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Issue Detail{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h2>Issue Details</h2>
+  <ul class="list-group">
+    <li class="list-group-item"><strong>Title:</strong> {{ issue.title }}</li>
+    <li class="list-group-item"><strong>Description:</strong> {{ issue.description }}</li>
+    <li class="list-group-item"><strong>Location:</strong> {{ issue.location }}</li>
+    <li class="list-group-item"><strong>Status:</strong> {{ issue.status }}</li>
+  </ul>
+  <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}
