@@ -1,14 +1,64 @@
 {% extends "layout.html" %}
 
 {% block content %}
-  <h2>Report an Issue</h2>
-  <form method="POST" enctype="multipart/form-data">
-    {{ form.hidden_tag() }}
-    <p>{{ form.title.label }}<br>{{ form.title() }}</p>
-    <p>{{ form.description.label }}<br>{{ form.description() }}</p>
-    <p>{{ form.location.label }}<br>{{ form.location() }}</p>
-    <p>{{ form.category.label }}<br>{{ form.category() }}</p>
-    <p>{{ form.image_file.label }}<br>{{ form.image_file() }}</p>
-    <p>{{ form.submit() }}</p>
-  </form>
+  <div class="container" style="max-width: 600px;">
+    <h2 class="mb-4">Report an Issue</h2>
+    <form method="POST" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+
+      <div class="mb-3">
+        {{ form.title.label(class="form-label") }}
+        {{ form.title(class="form-control") }}
+      </div>
+
+      <div class="mb-3">
+        {{ form.description.label(class="form-label") }}
+        {{ form.description(class="form-control", rows=4) }}
+      </div>
+
+      <div class="mb-3">
+        {{ form.location.label(class="form-label") }}
+        {{ form.location(class="form-control", id="location-input") }}
+      </div>
+
+      <div id="map" style="height: 300px;" class="mb-4"></div>
+
+      <div class="mb-3">
+        {{ form.category.label(class="form-label") }}
+        {{ form.category(class="form-select") }}
+      </div>
+
+      <div class="mb-3">
+        {{ form.image_file.label(class="form-label") }}
+        {{ form.image_file(class="form-control") }}
+      </div>
+
+      <div class="d-grid">
+        {{ form.submit(class="btn btn-dark") }}
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const map = L.map('map').setView([0.3476, 32.5825], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker;
+
+    map.on('click', function(e) {
+      const lat = e.latlng.lat.toFixed(6);
+      const lng = e.latlng.lng.toFixed(6);
+      const locationInput = document.getElementById('location-input');
+      locationInput.value = `${lat}, ${lng}`;
+
+      if (marker) {
+        map.removeLayer(marker);
+      }
+
+      marker = L.marker([lat, lng]).addTo(map);
+    });
+  </script>
 {% endblock %}
+

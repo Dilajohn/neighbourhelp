@@ -1,17 +1,27 @@
 {% extends "layout.html" %}
+
 {% block content %}
-  <h2>Admin Dashboard</h2>
-  <p><a href="{{ url_for('main.logout') }}">Logout</a></p>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Admin Dashboard</h2>
+    <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">Logout</a>
+  </div>
+
   {% for issue in issues %}
-    <div class="issue-card">
-      <h3>{{ issue.title }}</h3>
-      <p><strong>Category:</strong> {{ issue.category }} | <strong>Status:</strong> {{ issue.status }}</p>
-      <p>{{ issue.description }}</p>
-      {% if issue.image_file %}
-        <img src="{{ url_for('static', filename='uploads/' + issue.image_file) }}" width="300" />
-      {% endif %}
-      <p><strong>Location:</strong> {{ issue.location }}</p>
-      <p><em>Posted on {{ issue.date_posted.strftime('%Y-%m-%d') }}</em></p>
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">{{ issue.title }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">
+          Category: {{ issue.category }} | Status: {{ issue.status }}
+        </h6>
+        <p class="card-text">{{ issue.description }}</p>
+
+        {% if issue.image_file %}
+          <img src="{{ url_for('static', filename='uploads/' + issue.image_file) }}" class="img-fluid mb-3" />
+        {% endif %}
+
+        <p><strong>Location:</strong> {{ issue.location }}</p>
+        <p class="text-muted"><em>Posted on {{ issue.date_posted.strftime('%Y-%m-%d') }}</em></p>
+      </div>
     </div>
   {% endfor %}
 {% endblock %}
