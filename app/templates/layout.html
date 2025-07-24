@@ -3,7 +3,17 @@
 <head>
   <meta charset="utf-8">
   <title>NeighbourHelp</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-o9N1j+rT0Do8yWKIkwfH8v7q6kC3SeR3TzP3f2QzPXA="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o8Ey+/53N9wEr7zGh0z8MwNw53p6zu9c11kTqGHF0u8="
+    crossorigin=""
+  ></script>
 </head>
 <body>
   <header><h1>NeighbourHelp</h1></header>
@@ -15,7 +25,43 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-    {% block content %}{% endblock %}
+    {% block content %}
+  <h2>Report an Issue</h2>
+  <form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <p>{{ form.title.label }}<br>{{ form.title() }}</p>
+    <p>{{ form.description.label }}<br>{{ form.description() }}</p>
+
+    <p>{{ form.location.label }}<br>{{ form.location(id='location-input') }}</p>
+    <div id="map" style="height: 300px; margin-bottom: 1rem;"></div>
+
+    <p>{{ form.category.label }}<br>{{ form.category() }}</p>
+    <p>{{ form.image_file.label }}<br>{{ form.image_file() }}</p>
+    <p>{{ form.submit() }}</p>
+  </form>
+
+  <script>
+    const map = L.map('map').setView([0.3476, 32.5825], 13); // Center on Kampala by default
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker;
+
+    map.on('click', function(e) {
+      const lat = e.latlng.lat.toFixed(6);
+      const lng = e.latlng.lng.toFixed(6);
+      const locationInput = document.getElementById('location-input');
+      locationInput.value = `${lat}, ${lng}`;
+
+      if (marker) {
+        map.removeLayer(marker);
+      }
+
+      marker = L.marker([lat, lng]).addTo(map);
+    });
+  </script>
+    {% endblock %}
   </main>
   <footer><p>&copy; 2025 NeighbourHelp</p></footer>
 </body>
