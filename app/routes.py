@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash, generate_password_hash
 from app import db
 from app.models import Issue, Admin
-from app.forms import IssueForm, LoginForms
+from app.forms import IssueForm, LoginForm
 
 bp = Blueprint('main', __name__)
 
