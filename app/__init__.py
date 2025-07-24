@@ -6,18 +6,15 @@ from flask_wtf import CSRFProtect
 from config import Config
 from datetime import datetime
 
-
 # Extensions
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 csrf = CSRFProtect()
 
-
 # Login settings
-login_manager.login_view = "main.login"
+login_manager.login_view = "admin_auth.admin_login"  # Change if "main.login" doesn't exist
 login_manager.login_message_category = "info"
-
 
 def create_app():
     app = Flask(__name__)
@@ -37,15 +34,16 @@ def create_app():
         return Admin.query.get(int(user_id))
 
     # Register Blueprints
-
     from app.routes.admin import admin_routes
     from app.routes.admin_auth import admin_auth
+    from app.routes.main import main_routes
 
     app.register_blueprint(admin_routes)
     app.register_blueprint(admin_auth)
+    app.register_blueprint(main_routes)
 
     @app.context_processor
     def inject_now():
-        return {"current_year": datetime.datetime.now(datetime.timezone.utc).year}
+        return {"current_year": datetime.now().year}
 
     return app
