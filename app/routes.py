@@ -1,11 +1,38 @@
 import os
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash, generate_password_hash
 from app import db
-from app.models import Issue
-from app.forms import IssueForm
+from app.models import Issue, Admin
+from app.forms import IssueForm, LoginForms
 
 bp = Blueprint('main', __name__)
+
+@bp.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = Admin.query.filter_by(username=form.username.data).first()
+        if user and check_password_hash(user.password, form.password.data):
+            login_user(user)
+            flash('Logged in successfully.', 'success')
+            return redirect(url_for('main.admin_dashboard'))
+        else:
+            flash('Login failed. Check username/password.', 'danger')
+    return render_template('login.html', form=form)
+
+@bp.route('/logout')
+def logout():
+    logout_user()
+    flash('Logged out.', 'info')
+    return redirect(url_for('main.index'))
+
+@bp.route('/admin')
+@login_required
+def admin_dashboard():
+    issues = Issue.query.order_by(Issue.date_posted.desc()).all()
+    return render_template('admin_dashboard.html', issues=issues)
 
 @bp.route('/')
 def index():

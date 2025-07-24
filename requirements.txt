@@ -3,6 +3,7 @@ Flask-WTF
 Flask-Login
 Flask-SQLAlchemy
 Flask-Migrate
+Flask-Login
 Werkzeug
 python-dotenv
 
