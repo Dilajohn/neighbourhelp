@@ -4,6 +4,9 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_wtf import CSRFProtect
 from config import Config
+from datetime import datetime
+from app.routes.admin import admin_routes
+from app.routes.admin_auth import admin_auth
 
 
 # Extensions
@@ -11,6 +14,8 @@ db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 csrf = CSRFProtect()
+
+
 
 # Login settings
 login_manager.login_view = "main.login"
@@ -38,5 +43,11 @@ def create_app():
     from app.routes import bp as main_blueprint
 
     app.register_blueprint(main_blueprint)
+    app.register_blueprint(admin_routes)
+    app.register_blueprint(admin_auth)
+
+    @app.context_processor
+    def inject_now():
+        return {'current_year': datetime.datetime.now(datetime.timezone.utc).year}
 
     return app
