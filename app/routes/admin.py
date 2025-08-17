@@ -1,8 +1,6 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from app.models import Issue
-from app import db
 from functools import wraps
-from flask import session
 
 admin_routes = Blueprint("admin_routes", __name__, template_folder="../templates/admin")
 
@@ -22,10 +20,10 @@ def admin_required(f):
 @admin_routes.route("/admin/dashboard")
 @admin_required
 def admin_dashboard():
-    page = request.args.get("page", 1, type=int)
-    issues = Issue.query.order_by(Issue.date_posted.desc()).paginate(
-    page=request.args.get('page', 1, type=int), per_page=10
-)
+    page = request.args.get('page', 1, type=int)
+    issues = Issue.query.order_by(Issue.date_posted.desc()).paginate(page=page, per_page=10)
+    return render_template("dashboard.html", issues=issues)
+
 
 
 
