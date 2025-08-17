@@ -23,10 +23,10 @@ def admin_required(f):
 @admin_required
 def admin_dashboard():
     page = request.args.get("page", 1, type=int)
-    issues = Issue.query.order_by(Issue.timestamp.desc()).paginate(
-        page=page, per_page=5
-    )
-    return render_template("admin/dashboard.html", issues=issues)
+    issues = Issue.query.order_by(Issue.date_posted.desc()).paginate(
+    page=request.args.get('page', 1, type=int), per_page=10
+)
+
 
 
 @admin_routes.route("/admin/issue/<int:issue_id>")
