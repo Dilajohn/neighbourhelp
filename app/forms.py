@@ -4,13 +4,12 @@ from wtforms.validators import DataRequired
 from flask_wtf.file import FileField
 
 
-
 class AdminLoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Login")
 
-    
+
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
@@ -33,4 +32,15 @@ class IssueForm(FlaskForm):
         validators=[DataRequired()],
     )
     image_file = FileField("Upload Photo")
+    status = SelectField(
+        "Status",
+        choices=[
+            ("open", "Open"),
+            ("in_progress", "In Progress"),
+            ("resolved", "Resolved"),
+        ],
+        validators=[DataRequired()],
+        default="open"
+    )
     submit = SubmitField("Report Issue")
+

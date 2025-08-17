@@ -22,11 +22,11 @@
           {% for issue in issues.items %}
           <tr>
             <td>
-              {% if issue.image %}
-              <img src="{{ url_for('static', filename='uploads/' ~ issue.image) }}"
-                   alt="{{ issue.title }}" class="img-thumbnail" style="max-width: 100px;">
+              {% if issue.image_filename %}
+                <img src="{{ url_for('static', filename='uploads/' ~ issue.image_filename) }}"
+                     alt="{{ issue.title }}" class="img-thumbnail" style="max-width: 100px;">
               {% else %}
-              <span class="text-muted">No image</span>
+                <span class="text-muted">No image</span>
               {% endif %}
             </td>
             <td>{{ issue.title }}</td>
@@ -36,7 +36,7 @@
                 {{ issue.status|capitalize }}
               </span>
             </td>
-            <td>{{ issue.timestamp.strftime('%b %d, %Y %H:%M') }}</td>
+            <td>{{ issue.date_posted.strftime('%b %d, %Y %H:%M') }}</td>
             <td>
               <!-- View Button: triggers modal -->
               <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#viewModal{{ issue.id }}">
@@ -46,12 +46,10 @@
               <!-- Resolve Button -->
               {% if issue.status != 'resolved' %}
               <a href="{{ url_for('admin_routes.resolve_issue', issue_id=issue.id) }}"
-                 class="btn btn-sm btn-success">
-                Mark Resolved
-              </a>
+                 class="btn btn-sm btn-success">Mark Resolved</a>
               {% endif %}
 
-              <!-- Delete Button: triggers modal -->
+              <!-- Delete Button -->
               <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ issue.id }}">
                 Delete
               </button>
@@ -71,9 +69,9 @@
                   <p><strong>Location:</strong> {{ issue.location or 'N/A' }}</p>
                   <p><strong>Status:</strong> {{ issue.status|capitalize }}</p>
                   <p><strong>Description:</strong><br>{{ issue.description or 'No description provided.' }}</p>
-                  <p><strong>Reported At:</strong> {{ issue.timestamp.strftime('%b %d, %Y %H:%M') }}</p>
-                  {% if issue.image %}
-                  <img src="{{ url_for('static', filename='uploads/' ~ issue.image) }}"
+                  <p><strong>Reported At:</strong> {{ issue.date_posted.strftime('%b %d, %Y %H:%M') }}</p>
+                  {% if issue.image_filename %}
+                  <img src="{{ url_for('static', filename='uploads/' ~ issue.image_filename) }}"
                        alt="{{ issue.title }}" class="img-fluid mt-3">
                   {% endif %}
                 </div>
@@ -92,7 +90,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">
-                    Are you sure you want to delete the issue titled "<strong>{{ issue.title }}</strong>"?
+                    Are you sure you want to delete "<strong>{{ issue.title }}</strong>"?
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -102,6 +100,7 @@
               </div>
             </div>
           </div>
+
           {% endfor %}
         </tbody>
       </table>
@@ -145,3 +144,4 @@
   {% endif %}
 </div>
 {% endblock %}
+
