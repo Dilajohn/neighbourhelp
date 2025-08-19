@@ -3,10 +3,17 @@ from flask_login import login_required
 from werkzeug.utils import secure_filename
 from app import db
 from app.models import Issue
+from app.forms import IssueForm
 import os
 
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin", template_folder="../templates/admin")
+admin_bp = Blueprint(
+    "admin",
+    __name__,
+    url_prefix="/admin",
+    template_folder="../templates/admin"
+)
 
+# Admin Dashboard
 @admin_bp.route("/dashboard")
 @login_required
 def admin_dashboard():
@@ -14,21 +21,24 @@ def admin_dashboard():
     issues = Issue.query.order_by(Issue.date_posted.desc()).paginate(page=page, per_page=10)
     return render_template("admin/dashboard.html", issues=issues)
 
+# View Issue
 @admin_bp.route("/issue/<int:issue_id>")
 @login_required
 def view_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
     return render_template("admin/view_issue.html", issue=issue)
 
+# Resolve Issue
 @admin_bp.route("/issue/<int:issue_id>/resolve", methods=["POST"])
 @login_required
 def resolve_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
-    issue.status = "resolved"
+    issue.status = "Resolved"
     db.session.commit()
     flash(f"Issue '{issue.title}' marked as resolved.", "success")
     return redirect(url_for("admin.admin_dashboard"))
 
+# Delete Issue
 @admin_bp.route("/issue/<int:issue_id>/delete", methods=["POST"])
 @login_required
 def delete_issue(issue_id):
@@ -38,23 +48,23 @@ def delete_issue(issue_id):
     flash("Issue deleted successfully.", "success")
     return redirect(url_for("admin.admin_dashboard"))
 
+# Edit Issue (now using IssueForm)
 @admin_bp.route("/issue/<int:issue_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
+    form = IssueForm(obj=issue)  # Pre-populate form with current issue data
 
-    if request.method == "POST":
-        issue.title = request.form["title"]
-        issue.description = request.form["description"]
-        issue.location = request.form["location"]
-        issue.category = request.form["category"]
-        issue.status = request.form["status"]  # expects 'open' | 'in_progress' | 'resolved'
+    if form.validate_on_submit():
+        # Update issue from form data
+        form.populate_obj(issue)
 
-        if "image_file" in request.files:
-            file = request.files["image_file"]
-            if file and file.filename.strip():
+        # Handle image upload if a new file is provided
+        if form.image_filename.data:
+            file = form.image_filename.data
+            if file.filename.strip():
                 filename = secure_filename(file.filename)
-                upload_dir = current_app.config.get("UPLOAD_FOLDER")
+                upload_dir = current_app.config.get("UPLOAD_FOLDER", "app/static/uploads")
                 os.makedirs(upload_dir, exist_ok=True)
                 file.save(os.path.join(upload_dir, filename))
                 issue.image_filename = filename
@@ -63,4 +73,4 @@ def edit_issue(issue_id):
         flash("Issue updated successfully!", "success")
         return redirect(url_for("admin.view_issue", issue_id=issue.id))
 
-    return render_template("admin/edit_issue.html", issue=issue)
+    return render_template("admin/edit_issue.html", form=form, issue=issue)

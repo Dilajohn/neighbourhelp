@@ -1,12 +1,18 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user, login_required
 from app.models import Admin
 from app.forms import AdminLoginForm
 
-admin_auth_bp = Blueprint("admin_auth", __name__, url_prefix="/admin", template_folder="../templates/admin")
+admin_auth_bp = Blueprint(
+    "admin_auth",
+    __name__,
+    url_prefix="/admin",
+    template_folder="../templates/admin"
+)
 
+# Admin login
 @admin_auth_bp.route("/login", methods=["GET", "POST"])
-def admin_login():
+def login():
     if current_user.is_authenticated:
         return redirect(url_for("admin.admin_dashboard"))
 
@@ -15,16 +21,17 @@ def admin_login():
         admin = Admin.query.filter_by(username=form.username.data).first()
         if admin and admin.check_password(form.password.data):
             login_user(admin)
-            flash("Logged in successfully.", "success")
+            flash("Login successful!", "success")
             return redirect(url_for("admin.admin_dashboard"))
-        flash("Invalid username or password.", "danger")
+        else:
+            flash("Invalid username or password.", "danger")
     return render_template("admin/login.html", form=form)
 
+# Admin logout
 @admin_auth_bp.route("/logout", methods=["POST"])
-def admin_logout():
-    if current_user.is_authenticated:
-        logout_user()
-    flash("Logged out successfully.", "info")
-    return redirect(url_for("admin_auth.admin_login"))
-
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.", "info")
+    return redirect(url_for("admin_auth.login"))
 

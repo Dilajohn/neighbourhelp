@@ -1,14 +1,14 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, FileField
-from wtforms.validators import DataRequired, Email, Length
+from wtforms.validators import DataRequired, Length
 
-# Admin Login Form (replaces the duplicated LoginForm)
+# Admin Login Form (username-based)
 class AdminLoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
+    username = StringField("Username", validators=[DataRequired(), Length(min=3, max=150)])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Login")
 
-# Issue Form (for editing/creating issues in admin)
+# Issue Form (create/edit issues)
 class IssueForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired(), Length(min=3, max=120)])
     description = TextAreaField("Description", validators=[DataRequired()])
@@ -16,25 +16,24 @@ class IssueForm(FlaskForm):
     category = SelectField(
         "Category",
         choices=[
-            ("Roads", "Roads"),
-            ("Lighting", "Lighting"),
-            ("Waste", "Waste"),
-            ("Water", "Water"),
-            ("Other", "Other")
+            ("pothole", "Pothole"),
+            ("lights", "Lights"),
+            ("rubbish", "Rubbish"),
+            ("water", "Water"),
+            ("other", "Other")
         ],
         validators=[DataRequired()]
     )
     status = SelectField(
         "Status",
         choices=[
-            ("Pending", "Pending"),
-            ("In Progress", "In Progress"),
-            ("Resolved", "Resolved")
+            ("open", "Open"),
+            ("in_progress", "In Progress"),
+            ("resolved", "Resolved")
         ],
-        default="Pending",
+        default="open",
         validators=[DataRequired()]
     )
     image_filename = FileField("Upload Image (optional)")
     submit = SubmitField("Save")
-
 
