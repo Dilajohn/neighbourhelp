@@ -1,5 +1,4 @@
 import os
-
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
@@ -11,6 +10,6 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(basedir, "app", "static", "uploads")
 
-    # Ensure instance folder exists
-    os.makedirs(os.path.join(basedir, "instance"), exist_ok=True)
-
+# Ensure folders exist
+os.makedirs(os.path.join(basedir, "instance"), exist_ok=True)
+os.makedirs(os.path.join(basedir, "app", "static", "uploads"), exist_ok=True)

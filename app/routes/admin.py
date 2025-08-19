@@ -7,8 +7,6 @@ import os
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin", template_folder="../templates/admin")
 
-
-# Dashboard (with pagination)
 @admin_bp.route("/dashboard")
 @login_required
 def admin_dashboard():
@@ -16,38 +14,30 @@ def admin_dashboard():
     issues = Issue.query.order_by(Issue.date_posted.desc()).paginate(page=page, per_page=10)
     return render_template("admin/dashboard.html", issues=issues)
 
-
-# View Issue
 @admin_bp.route("/issue/<int:issue_id>")
 @login_required
 def view_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
     return render_template("admin/view_issue.html", issue=issue)
 
-
-# Resolve Issue
 @admin_bp.route("/issue/<int:issue_id>/resolve", methods=["POST"])
 @login_required
 def resolve_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
-    issue.status = "Resolved"
+    issue.status = "resolved"
     db.session.commit()
     flash(f"Issue '{issue.title}' marked as resolved.", "success")
     return redirect(url_for("admin.admin_dashboard"))
 
-
-# Delete Issue
 @admin_bp.route("/issue/<int:issue_id>/delete", methods=["POST"])
 @login_required
 def delete_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
     db.session.delete(issue)
     db.session.commit()
-    flash("Issue deleted successfully!", "success")
+    flash("Issue deleted successfully.", "success")
     return redirect(url_for("admin.admin_dashboard"))
 
-
-# Edit Issue
 @admin_bp.route("/issue/<int:issue_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_issue(issue_id):
@@ -58,15 +48,15 @@ def edit_issue(issue_id):
         issue.description = request.form["description"]
         issue.location = request.form["location"]
         issue.category = request.form["category"]
-        issue.status = request.form["status"]
+        issue.status = request.form["status"]  # expects 'open' | 'in_progress' | 'resolved'
 
-        # Handle image upload
         if "image_file" in request.files:
             file = request.files["image_file"]
             if file and file.filename.strip():
                 filename = secure_filename(file.filename)
-                upload_path = os.path.join(current_app.root_path, "static/uploads", filename)
-                file.save(upload_path)
+                upload_dir = current_app.config.get("UPLOAD_FOLDER")
+                os.makedirs(upload_dir, exist_ok=True)
+                file.save(os.path.join(upload_dir, filename))
                 issue.image_filename = filename
 
         db.session.commit()
