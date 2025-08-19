@@ -34,11 +34,11 @@ def create_app():
         return Admin.query.get(int(user_id))
 
     # Register Blueprints
-    from app.routes.admin import admin_routes
+    from app.routes.admin import admin_bp
     from app.routes.admin_auth import admin_auth
     from app.routes.main import main_routes
 
-    app.register_blueprint(admin_routes)
+    app.register_blueprint(admin_bp)
     app.register_blueprint(admin_auth)
     app.register_blueprint(main_routes)
 

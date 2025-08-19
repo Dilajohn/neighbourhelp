@@ -1,82 +1,76 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session, current_app
-from app.models import Issue
-from app import db
-from functools import wraps
-import os
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask_login import login_required
 from werkzeug.utils import secure_filename
-from app.forms import IssueForm
+from app import db
+from app.models import Issue
+import os
 
-admin_routes = Blueprint("admin_routes", __name__, template_folder="../templates/admin")
-
-
-# Decorator to protect admin routes
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not session.get("admin_logged_in"):
-            flash("Please log in to access admin area.", "warning")
-            return redirect(url_for("admin_auth.admin_login"))
-        return f(*args, **kwargs)
-    return decorated_function
+admin_bp = Blueprint("admin", __name__, url_prefix="/admin", template_folder="../templates/admin")
 
 
-@admin_routes.route("/admin/dashboard")
-@admin_required
+# Dashboard (with pagination)
+@admin_bp.route("/dashboard")
+@login_required
 def admin_dashboard():
-    page = request.args.get('page', 1, type=int)
+    page = request.args.get("page", 1, type=int)
     issues = Issue.query.order_by(Issue.date_posted.desc()).paginate(page=page, per_page=10)
-    return render_template("dashboard.html", issues=issues)
+    return render_template("admin/dashboard.html", issues=issues)
 
 
-@admin_routes.route("/admin/issue/<int:issue_id>")
-@admin_required
-def admin_view_issue(issue_id):
+# View Issue
+@admin_bp.route("/issue/<int:issue_id>")
+@login_required
+def view_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
-    return render_template("view_issue.html", issue=issue)
+    return render_template("admin/view_issue.html", issue=issue)
 
 
-@admin_routes.route("/admin/resolve/<int:issue_id>")
-@admin_required
+# Resolve Issue
+@admin_bp.route("/issue/<int:issue_id>/resolve", methods=["POST"])
+@login_required
 def resolve_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
-    issue.status = "resolved"
+    issue.status = "Resolved"
     db.session.commit()
     flash(f"Issue '{issue.title}' marked as resolved.", "success")
-    return redirect(url_for("admin_routes.admin_dashboard"))
+    return redirect(url_for("admin.admin_dashboard"))
 
 
-@admin_routes.route("/admin/issue/delete/<int:issue_id>", methods=["POST"])
-@admin_required
-def admin_delete_issue(issue_id):
+# Delete Issue
+@admin_bp.route("/issue/<int:issue_id>/delete", methods=["POST"])
+@login_required
+def delete_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
     db.session.delete(issue)
     db.session.commit()
-    flash("Issue deleted successfully.", "success")
-    return redirect(url_for("admin_routes.admin_dashboard"))
+    flash("Issue deleted successfully!", "success")
+    return redirect(url_for("admin.admin_dashboard"))
 
 
-@admin_routes.route("/admin/issue/edit/<int:issue_id>", methods=["GET", "POST"])
-@admin_required
+# Edit Issue
+@admin_bp.route("/issue/<int:issue_id>/edit", methods=["GET", "POST"])
+@login_required
 def edit_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
-    form = IssueForm(obj=issue)  # pre-populates form with current issue data
 
-    if form.validate_on_submit():
-        issue.title = form.title.data
-        issue.description = form.description.data
-        issue.location = form.location.data
-        issue.category = form.category.data
-        issue.status = form.status.data
+    if request.method == "POST":
+        issue.title = request.form["title"]
+        issue.description = request.form["description"]
+        issue.location = request.form["location"]
+        issue.category = request.form["category"]
+        issue.status = request.form["status"]
 
         # Handle image upload
-        if form.image_file.data:
-            filename = secure_filename(form.image_file.data.filename)
-            upload_path = os.path.join(current_app.root_path, 'static/uploads', filename)
-            form.image_file.data.save(upload_path)
-            issue.image_filename = filename
+        if "image_file" in request.files:
+            file = request.files["image_file"]
+            if file and file.filename.strip():
+                filename = secure_filename(file.filename)
+                upload_path = os.path.join(current_app.root_path, "static/uploads", filename)
+                file.save(upload_path)
+                issue.image_filename = filename
 
         db.session.commit()
-        flash("Issue updated successfully.", "success")
-        return redirect(url_for("admin_routes.admin_view_issue", issue_id=issue.id))
+        flash("Issue updated successfully!", "success")
+        return redirect(url_for("admin.view_issue", issue_id=issue.id))
 
-    return render_template("edit_issue.html", form=form, issue=issue)
+    return render_template("admin/edit_issue.html", issue=issue)

@@ -1,71 +1,30 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import login_required
 from app import db
-from app.models import Issue
-
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
-
-# Dashboard
-@admin_bp.route("/dashboard")
-@login_required
-def admin_dashboard():
-    issues = Issue.query.order_by(Issue.date_posted.desc()).all()
-    return render_template("admin/dashboard.html", issues=issues)
+from flask_login import UserMixin
+from datetime import datetime
 
 
-# View Issue
-@admin_bp.route("/issue/<int:issue_id>")
-@login_required
-def view_issue(issue_id):
-    issue = Issue.query.get_or_404(issue_id)
-    return render_template("admin/view_issue.html", issue=issue)
+class Admin(UserMixin, db.Model):
+    __tablename__ = "admins"
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)  # hashed password
+
+    def __repr__(self):
+        return f"<Admin {self.username}>"
 
 
-# Resolve Issue
-@admin_bp.route("/issue/<int:issue_id>/resolve", methods=["POST"])
-@login_required
-def resolve_issue(issue_id):
-    issue = Issue.query.get_or_404(issue_id)
-    issue.status = "Resolved"
-    db.session.commit()
-    flash("Issue marked as resolved!", "success")
-    return redirect(url_for("admin.admin_dashboard"))
+class Issue(db.Model):
+    __tablename__ = "issues"
 
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    location = db.Column(db.String(120), nullable=True)
+    category = db.Column(db.String(50), nullable=True)
+    status = db.Column(db.String(20), default="Pending")  # Pending, In Progress, Resolved
+    image_filename = db.Column(db.String(255), nullable=True)
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Delete Issue
-@admin_bp.route("/issue/<int:issue_id>/delete", methods=["POST"])
-@login_required
-def delete_issue(issue_id):
-    issue = Issue.query.get_or_404(issue_id)
-    db.session.delete(issue)
-    db.session.commit()
-    flash("Issue deleted successfully!", "success")
-    return redirect(url_for("admin.admin_dashboard"))
-
-
-# ✨ NEW: Edit Issue
-@admin_bp.route("/issue/<int:issue_id>/edit", methods=["GET", "POST"])
-@login_required
-def edit_issue(issue_id):
-    issue = Issue.query.get_or_404(issue_id)
-
-    if request.method == "POST":
-        issue.title = request.form["title"]
-        issue.description = request.form["description"]
-        issue.location = request.form["location"]
-        issue.category = request.form["category"]
-
-        # Handle image update (optional)
-        if "image_filename" in request.files:
-            file = request.files["image_filename"]
-            if file and file.filename.strip():
-                # simple: store filename only
-                issue.image_filename = file.filename
-                # if you want file saving: file.save(os.path.join(UPLOAD_FOLDER, file.filename))
-
-        db.session.commit()
-        flash("Issue updated successfully!", "success")
-        return redirect(url_for("admin.view_issue", issue_id=issue.id))
-
-    return render_template("admin/edit_issue.html", issue=issue)
-
+    def __repr__(self):
+        return f"<Issue {self.title}>"
